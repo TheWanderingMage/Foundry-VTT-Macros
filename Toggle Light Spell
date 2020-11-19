@@ -1,0 +1,33 @@
+// Modifications from TheWanderingMage
+//https://github.com/TheWanderingMage
+// modified from macros by:
+// https://github.com/Sky-Captain-13/foundry
+//This will toggle all selected tokens to light spell light.
+
+if (canvas.tokens.controlled.length === 0) return ui.notifications.error("Please select a token first");
+var setDim = 40;
+var setBright = 20; 
+var setColor = "#ffffff";
+var setAlpha = .35;
+
+var setType = "chroma";
+var setSpeed = 8;
+var setIntensity = 1;
+
+var newDim = 0;
+var newBright = 0;
+
+      for ( let token of canvas.tokens.controlled )
+      {
+           let curDim = token.data.dimLight;
+           let curBright = token.data.brightLight;
+//if it has any light currently - turn it off - if not then set it to the variables at the start of the code.
+          if ((curDim + curBright) == 0) {newBright = setBright; newDim = setDim;} else {newBright = 0; newDim = 0;}
+        // Update Token
+        console.log(token);
+        token.data.lightAnimation.type = setType;      
+        token.data.lightAnimation.speed= setSpeed;
+        token.data.lightAnimation.intensity = setIntensity;
+
+        token.update({dimLight: newDim, brightLight:  newBright, lightAngle: 360, lightColor: setColor, lightAlpha: setAlpha, })
+      }
