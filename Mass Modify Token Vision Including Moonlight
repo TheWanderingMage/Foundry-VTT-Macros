@@ -1,0 +1,114 @@
+/*
+  Tokens should really only have a 0 vision in pitch darkness.
+  A drop down is used to set "ambient light".  I have recomendations based on current moon phase that I personally like to use.
+  When you accept, all selected tokens will have their light vision set to the # of feet listed
+  IF the target has darkvision on their 5e character sheet... then they will gain BRIGHT VISION of X Feet + Light vision equal to X feet + their darkvision.
+  I found these setting much more realistic for outdooor fights.
+  Thank you to // https://github.com/Sky-Captain-13/foundry - some of the structure was taken from your content.
+*/
+if (canvas.tokens.controlled.length === 0) return ui.notifications.error("Please select a token first");
+
+let applyChanges = false;
+new Dialog({
+  title: `Select current lighting conditions`,
+  content: `
+    <form>
+      <div class="form-group">
+        <label>Light:</label>
+        <select id="vision-type" name="vision-type">
+          <option value="dim0">0ft. Waning Crescent 3 - New Moon 2</option>
+          <option value="dim5">5ft. New Moon 3 / Waning Crescent 2</option>
+          <option value="dim10">10 ft.</option>
+          <option value="dim15">15 ft. Waxing Crescent 1 / Waning Crescent 1</option>
+          <option value="dim20">20 ft. Waxing Crescent 2 / Last Quarter Moon 3</option>
+          <option value="dim25">25 ft. Waxing Crescent 3 / Last Quarter Moon 2</option>
+          <option value="dim30">30 ft. First Quarter Moon 1 / Last Quarter Moon 1</option>
+          <option value="dim35">35 ft. </option>
+          <option value="dim40">40 ft  First Quarter Moon 2 / Waning Gibbous 3.</option>
+          <option value="dim45">45 ft.</option>
+          <option value="dim50">50 ft. First Quarter Moon 3 / Waning Gibbous 2</option>
+          <option value="dim55">55 ft.</option>
+          <option value="dim60">60 ft.  Waxing Gibbous 1 / Waning Gibbous 1</option>
+          <option value="dim65">65 ft.</option>
+          <option value="dim70">70 ft. Waxing Gibbous 2 / Full Moon 3</option>
+          <option value="dim75">75 ft.</option>
+          <option value="dim80">80 ft. ft. Waxing Gibbous 3 / Full Moon 2</option>
+          <option value="dim85">85 ft.</option>
+          <option value="dim90">90 ft.  Full Moon 1</option>
+          <option value="dim100">100 ft.</option>
+          <option value="dim125">125 ft.</option>
+          <option value="dim150">150 ft.</option>
+          <option value="dim175">175 ft.</option>
+          <option value="dim200">200 ft.</option>
+        </select>
+    </form>
+    `,
+  buttons: {
+    yes: {
+      icon: "<i class='fas fa-check'></i>",
+      label: `Apply Changes`,
+      callback: () => applyChanges = true
+    },
+    no: {
+      icon: "<i class='fas fa-times'></i>",
+      label: `Cancel Changes`
+    },
+  },
+  default: "yes",
+  close: html => {
+
+    if (applyChanges) {
+      for ( let token of canvas.tokens.controlled )
+      {
+        let visionType = html.find('[name="vision-type"]')[0].value || "none";
+        let dimSight = 0;
+        let brightSight = 0;
+        let dimLight = 0;
+        let brightLight = 0;
+        let lightAngle = 360;
+        let lockRotation = token.data.lockRotation;
+        
+//set the returned value to a number
+        let bonusVision = visionType.replace("dim", "");        
+
+        let darkVision = 0;
+        var str = "";
+        str = token.actor.data.data.traits.senses;
+        if(str.includes("Darkvision "))
+        {
+            let startPos = str.indexOf("Darkvision ") + 11; //set position to start of the number
+            str = str.slice(startPos); //get the string past darkvision
+            let myArray = str.split(" ");
+            darkVision = myArray[0];
+        }
+//now set the new vision
+        if (darkVision == 0)
+        {
+            //min of 5 feet dim vision in total dark...
+            if (bonusVision == 0) {bonusVision = 5}
+            dimSight = parseInt(bonusVision);
+            brightSight = 0;
+        }
+        else
+        {
+//            ui.notifications.info(darkVision);
+            dimSight = parseInt(bonusVision) + parseInt(darkVision);
+            brightSight = parseInt(bonusVision);
+        }
+        // Update Token
+        console.log(token);
+        token.update({
+          vision: true,
+          dimSight: dimSight,
+          brightSight: brightSight,
+//          dimLight: dimLight,
+  //        brightLight:  brightLight,
+    //      lightAngle: lightAngle,
+      //    lockRotation: lockRotation
+        });
+      }
+    }
+  }
+}).render(true);
+
+
